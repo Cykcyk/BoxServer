@@ -54,7 +54,7 @@ public class SloganRepository {
         }
 
         Criteria criteria = createBasicCriteriaForCategoriesAndDifficulties(categories, difficulties);
-
+sss
         criteria.add(Restrictions.isNotNull(D_SECOND_SLOGAN));
 
         return criteria.setProjection(Projections.distinct(Projections.property(D_ID)))
