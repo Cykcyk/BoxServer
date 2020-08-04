@@ -1,13 +1,14 @@
 package com.boxserver.BoxServer.charades.slogan.dao;
 
 import org.hibernate.Criteria;
-import org.hibernate.SessionFactory;
+import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.List;
@@ -16,26 +17,18 @@ import java.util.Optional;
 import static com.boxserver.BoxServer.charades.slogan.dao.Slogan.*;
 
 @Transactional
-@Repository
+@Service
 @SuppressWarnings("unchecked")
 public class SloganRepository {
 
-    private final SessionFactory sessionFactory;
-
     @Autowired
-    public SloganRepository(SessionFactory sessionFactory) {
-
-        Assert.notNull(sessionFactory, "sessionFactory must not be null");
-
-        this.sessionFactory = sessionFactory;
-    }
+    private EntityManager entityManager;
 
     public Optional<Slogan> findById(Long id) {
 
         Assert.notNull(id, "id must not be null");
 
-        Slogan slogan = (Slogan) sessionFactory.getCurrentSession()
-                .createCriteria(Slogan.class)
+        Slogan slogan = (Slogan) getSession().createCriteria(Slogan.class)
                 .add(Restrictions.eq(D_ID, id))
                 .uniqueResult();
 
@@ -70,8 +63,7 @@ public class SloganRepository {
 
     private Criteria createBasicCriteriaForCategoriesAndDifficulties(List<SloganCategory> categories, List<SloganDifficulty> difficulties) {
 
-        Criteria criteria = sessionFactory.getCurrentSession()
-                .createCriteria(Slogan.class);
+        Criteria criteria = getSession().createCriteria(Slogan.class);
 
         if (categories != null && !categories.isEmpty()) {
 
@@ -89,6 +81,10 @@ public class SloganRepository {
 
         Assert.notNull(slogan, "slogan must not be null");
 
-        sessionFactory.getCurrentSession().saveOrUpdate(slogan);
+        getSession().saveOrUpdate(slogan);
+    }
+
+    private Session getSession() {
+        return entityManager.unwrap(Session.class);
     }
 }
