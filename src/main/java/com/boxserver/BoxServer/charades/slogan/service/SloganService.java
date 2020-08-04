@@ -1,9 +1,7 @@
 package com.boxserver.BoxServer.charades.slogan.service;
 
 import com.boxserver.BoxServer.charades.slogan.controller.SloganDto;
-import com.boxserver.BoxServer.charades.slogan.dao.Slogan;
-import com.boxserver.BoxServer.charades.slogan.dao.SloganFactory;
-import com.boxserver.BoxServer.charades.slogan.dao.SloganRepository;
+import com.boxserver.BoxServer.charades.slogan.dao.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +12,12 @@ import java.util.Random;
 @Service
 public class SloganService {
 
-    @Autowired
     private final SloganRepository sloganRepository;
     private final SloganFactory sloganFactory;
 
-    private Random randomGenerator;
+    private final Random randomGenerator;
 
+    @Autowired
     public SloganService(SloganRepository sloganRepository,
                          SloganFactory sloganFactory) {
 
@@ -29,27 +27,44 @@ public class SloganService {
         this.randomGenerator = new Random();
     }
 
-    public SloganDto getRandomSloganDto() {
+    public SloganDto getRandomSingleSloganDto(List<SloganCategory> categories, List<SloganDifficulty> difficulties) {
 
-        List<Long> sloganIds = sloganRepository.getAllIds();
+        List<Long> sloganIds = sloganRepository.findIdsByCategoriesAndDifficulties(categories, difficulties);
 
-        return getSloganDto((long) randomGenerator.nextInt(sloganIds.size()));
+        return getRandomSlogan(sloganIds);
+    }
+
+    public SloganDto getRandomDoubleSloganDto(List<SloganCategory> categories, List<SloganDifficulty> difficulties) {
+
+        List<Long> sloganIds = sloganRepository.findDoubleSloganIdsByCategoriesAndDifficulties(categories, difficulties);
+
+        return getRandomSlogan(sloganIds);
+    }
+
+    public Long saveOrUpdate(SloganDto sloganDto) {
+
+        Slogan slogan = sloganFactory.generateSlogan(sloganDto);
+
+        sloganRepository.saveOrUpdate(slogan);
+
+        return slogan.getId();
     }
 
     public SloganDto getSloganDto(Long sloganId) {
 
         Optional<Slogan> sloganOptional = sloganRepository.findById(sloganId);
 
-        return sloganOptional.map(sloganFactory::transformToSloganDto)
-                .orElse(null);
+        return sloganOptional.map(sloganFactory::generateSloganDto)
+                .orElse(new SloganDto());
     }
 
-    public Long saveOrUpdate(SloganDto sloganDto) {
+    private SloganDto getRandomSlogan(List<Long> sloganIds) {
 
-        Slogan slogan = sloganFactory.transformFromSloganDto(sloganDto);
+        if (sloganIds.size() > 0) {
 
-        sloganRepository.save(slogan);
+            return getSloganDto((long) randomGenerator.nextInt(sloganIds.size()));
+        }
 
-        return slogan.getSloganId();
+        return new SloganDto();
     }
 }
