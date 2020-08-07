@@ -10,7 +10,6 @@ import org.springframework.util.Assert;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,10 +36,6 @@ public class SloganRepository {
 
     public List<Long> findIdsByCategoriesAndDifficulties(List<SloganCategory> categories, List<SloganDifficulty> difficulties) {
 
-        if (categories == null && difficulties == null) {
-            return Collections.emptyList();
-        }
-
         Criteria criteria = createBasicCriteriaForCategoriesAndDifficulties(categories, difficulties);
 
         return criteria.setProjection(Projections.distinct(Projections.property(D_ID)))
@@ -48,10 +43,6 @@ public class SloganRepository {
     }
 
     public List<Long> findDoubleSloganIdsByCategoriesAndDifficulties(List<SloganCategory> categories, List<SloganDifficulty> difficulties) {
-
-        if (categories == null && difficulties == null) {
-            return Collections.emptyList();
-        }
 
         Criteria criteria = createBasicCriteriaForCategoriesAndDifficulties(categories, difficulties);
 
